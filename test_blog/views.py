@@ -1,11 +1,12 @@
 from django.contrib.auth import login, authenticate
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 
-from .forms import CommentForm, LogInForm, PostForm
-from .models import Blog, Comment, Post, SeenPosts, Subscribe
+from .forms import LogInForm, PostForm, CommentForm
+from .models import Blog, Post, Subscribe, SeenPosts, Comment
 
 
 class MainView(View):
@@ -16,54 +17,40 @@ class MainView(View):
             request, 'test_blog/home.html')
 
 
-class HomeBlogView(View):
-    '''Представление блога активного пользователя'''
-
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        blog = get_object_or_404(Blog, author=user) # Нужно для шаблона
-        self_blog = get_object_or_404(Blog, author=user) # Используется в шаблоне,
-        # когда сравниваются просматриваемый блог и блог активного пользователя
-        posts = Post.objects.all().filter(author=user) # Все посты блога активного пользователя
-        paginator = Paginator(posts, 6)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        return render(request, 'test_blog/blog.html', context={
-            'blog': blog,
-            'self_blog': self_blog,
-            'page_obj': page_obj
-        })
-
 class BlogsView(View):
     '''Представление блогов, на которые может подписаться активный пользователь'''
 
     def get(self, request, *args, **kwargs):
-        blogs = Blog.objects.all().exclude(author=request.user) # Выбираем все блоги,
+        self_blog = get_object_or_404(Blog, author=request.user)
+        blogs = Blog.objects.all().exclude(
+            author=request.user)  # Выбираем все блоги,
         # кроме блога активного пользователя
         paginator = Paginator(blogs, 6)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         return render(request, 'test_blog/blogs.html', context={
+            'self_blog': self_blog,
             'page_obj': page_obj
         })
 
 
-class OtherBlogView(View):
+class BlogView(View):
     '''Представление блога другого пользователя'''
 
     def get(self, request, slug, *args, **kwargs):
         user = request.user
-        blog = get_object_or_404(Blog, url=slug)
-        self_blog = get_object_or_404(Blog, author=user) # Используется в шаблоне,
+        author = Blog.objects.get(url=slug).author
+        blog = get_object_or_404(Blog, author=author)
+        self_blog = get_object_or_404(Blog, author=request.user)  # Используется в шаблоне,
         # когда сравниваются просматриваемый блог и блог активного пользователя
-        posts = Post.objects.all().filter(blog=blog)
+        posts = Post.objects.all().filter(author=author).order_by('-created_at')
         paginator = Paginator(posts, 6)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         subscribed = Subscribe.objects.filter(subscriber=user, blog=blog).exists()
-        return render(request, 'test_blog/other_blog.html', context={
-            'self_blog': self_blog,
+        return render(request, 'test_blog/blog.html', context={
             'blog': blog,
+            'self_blog': self_blog,
             'page_obj': page_obj,
             'subscribed': subscribed
         })
@@ -87,7 +74,8 @@ class UnsubscribeView(View):
 
     def get(self, request, slug, *args, **kwargs):
         blog = Blog.objects.get(url=slug)
-        Subscribe.objects.get(subscriber=request.user, blog=blog).delete()
+        user = request.user
+        Subscribe.objects.get(subscriber=user, blog=blog).delete()
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -98,15 +86,15 @@ class FeedView(View):
         user = request.user
         blogs = user.subscriber.values_list('blog', flat=True) # Выбираем все блоги,
         # на которые подписан пользователь
-        posts = Post.objects.all().filter(blog__in=blogs).order_by('created_at')
+        posts = Post.objects.all().filter(blog__in=blogs).exclude(
+            author=request.user).order_by('-created_at')
         paginator = Paginator(posts, 6)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         return render(request, 'test_blog/feed.html', context={
-            'user': user,
+            'user': request.user,
             'page_obj': page_obj
         })
-
 
 class PostView(View):
     '''Представление одного поста блога'''
@@ -146,6 +134,7 @@ class PostView(View):
             'comment_form': comment_form,
         })
 
+
 class PostCreateView(View):
     '''Представление формы создания поста'''
 
@@ -159,10 +148,16 @@ class PostCreateView(View):
         form = PostForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
-            post.author = request.user
-            blog = get_object_or_404(Blog, author=request.user)
+            user = request.user
+            post.author = user
+            blog = get_object_or_404(Blog, author=user)
             post.blog = blog
+            users = blog.subscribed_blog.values_list('subscriber', flat=True)
+            send_mail(f'New post on {blog.title}',
+                      f'{user} just posted new stuff on {blog.title}. Check it out!',
+                      f'{user.email}', [f'{user.email}' for user in users])
             post.save()
+            SeenPosts.objects.get_or_create(user=user, post=post)
             return redirect('/')
         return render(request, 'test_blog/new_post.html', context={
             'form': form,

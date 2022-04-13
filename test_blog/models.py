@@ -37,18 +37,6 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('blog')
 
-class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
-    username = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_name', null=True)
-    text = models.TextField()
-    created_date = models.DateTimeField(default=timezone.now)
-    parent = models.ForeignKey('self', null=True, blank=True,
-                               related_name='replies', on_delete=models.CASCADE)
-    class Meta:
-        ordering = ['-created_date']
-
-    def __str__(self):
-        return self.text
 
 class Subscribe(models.Model):
     '''Модель для подписок пользователей на блоги. Не очень удачно сделана, но
@@ -62,6 +50,7 @@ class Subscribe(models.Model):
     def __str__(self):
         return f"Пользователь {self.subscriber} подписан на блог {self.blog}"
 
+
 class SeenPosts(models.Model):
     '''Модель для отметки просмотра поста пользователем. Не очень удачно
     сделана, но работает'''
@@ -74,3 +63,15 @@ class SeenPosts(models.Model):
     def __str__(self):
         return f"Пользователь {self.user} просмотрел пост {self.post}"
 
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    username = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_name')
+    text = models.TextField()
+    created_date = models.DateTimeField(default=timezone.now)
+    parent = models.ForeignKey('self', null=True, blank=True,
+                               related_name='replies', on_delete=models.CASCADE)
+    class Meta:
+        ordering = ['-created_date']
+
+    def __str__(self):
+        return self.text
