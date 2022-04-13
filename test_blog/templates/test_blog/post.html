@@ -1,0 +1,78 @@
+{% extends './base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-9">
+          <nav aria-label="breadcrumb" class="mt-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ post.h1 }}</li>
+                </ol>
+            </nav>
+            <hr>
+            <h1>{{ post.h1 }}</h1>
+            <p class="lead">
+            {{ post.content|safe }}
+            </p>
+            <hr>
+        </div>
+            <hr>
+            <div class="d-flex">
+                <div class="mr-auto p-2 lead">Author: {{ post.author }}</div>
+                <div class="mr-auto p-2 lead">Blog: {{ post.blog }}</div>
+                <div class="p-2 lead">Created at: {{ post.created_at }}</div>
+            </div>
+    </div>
+    {% if seen %}
+        <div class="seen">
+            <p>You have seen this post</p>
+        </div>
+        {% else %}
+        <div class="not_seen">
+            <a href="{% url 'seen_post' slug=post.url%}" class="btn btn-sm btn-dark">Seen</a>
+        </div>
+        {% endif %}
+
+        <!-- Comments Form -->
+    <h2>Add a new comment</h2>
+    <form action="." method="post">
+        {{ comment_form.as_p }}
+        {% csrf_token %}
+        <button type="submit">Add comment</button>
+    </form>
+    <br>
+    <!-- Comment with nested comments -->
+    {% for comment in comments %}
+        <div class="comment" style="background-color: powderblue">
+            <h5>Comment:</h5>
+            <p class="info">{{ comment.username }} | {{ comment.created_date }}</p>
+                {{ comment.text|linebreaks }}
+            <h5>Replies:</h5>
+
+            {% for reply in comment.replies.all %}
+                <p class="info">{{ reply.username }} | {{ reply.created_date }}</p>
+                {{ reply.text }}
+                {% empty %}
+                <p>There are no replies yet.</p>
+            {% endfor %}
+
+            <h5>Reply</h5>
+            <form action="." method="post">
+                {{ comment_form.as_p }}
+                {% csrf_token %}
+                <!-- Hidden input for parent comment.id -->
+                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                <input class="btn btn-primary" type="submit" value="Reply">
+            </form>
+            <hr>
+        </div>
+    {% empty %}
+    <h4>There are no comments yet.</h4>
+{% endfor %}
+</div>
+
+{% endblock %}
