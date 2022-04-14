@@ -12,7 +12,7 @@ router.register('blogs', BlogsView, basename='blogs')
 urlpatterns = [
     path('', include(router.urls)),
     path('comments/', CommentView.as_view()),
-    path('comments/<slug:post_slug>/', CommentView.as_view()),
+    path('comments/<slug:post_url>/', CommentView.as_view()),
     path('replies/<slug:parent_id>/', ReplyView.as_view()),
     path('profile/', ProfileView.as_view()),
     path('seen_posts/', SeenPostsView.as_view()),

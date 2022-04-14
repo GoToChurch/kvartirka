@@ -25,8 +25,8 @@ class CommentView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        post_slug = self.kwargs['post_slug'].lower()
-        post = Post.objects.get(url=post_slug)
+        post_url = self.kwargs['post_url'].lower()
+        post = Post.objects.get(url=post_url)
         return Comment.objects.filter(post=post)
 
 

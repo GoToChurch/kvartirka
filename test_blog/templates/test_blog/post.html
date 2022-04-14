@@ -36,8 +36,6 @@
             <a href="{% url 'seen_post' slug=post.url%}" class="btn btn-sm btn-dark">Seen</a>
         </div>
         {% endif %}
-
-        <!-- Comments Form -->
     <h2>Add a new comment</h2>
     <form action="." method="post">
         {{ comment_form.as_p }}
@@ -45,29 +43,40 @@
         <button type="submit">Add comment</button>
     </form>
     <br>
-    <!-- Comment with nested comments -->
     {% for comment in comments %}
         <div class="comment" style="background-color: powderblue">
-            <h5>Comment:</h5>
             <p class="info">{{ comment.username }} | {{ comment.created_date }}</p>
                 {{ comment.text|linebreaks }}
-            <h5>Replies:</h5>
-
-            {% for reply in comment.replies.all %}
-                <p class="info">{{ reply.username }} | {{ reply.created_date }}</p>
-                {{ reply.text }}
-                {% empty %}
-                <p>There are no replies yet.</p>
-            {% endfor %}
-
-            <h5>Reply</h5>
-            <form action="." method="post">
-                {{ comment_form.as_p }}
-                {% csrf_token %}
-                <!-- Hidden input for parent comment.id -->
-                <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                <input class="btn btn-primary" type="submit" value="Reply">
-            </form>
+            <p>
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                    Replies
+                </button>
+            </p>
+            <div class="collapse" id="collapseReplies">
+                <div class="card card-body">
+                    {% for reply in comment.replies.all %}
+                        <p class="info">{{ reply.username }} | {{ reply.created_date }}</p>
+                        {{ reply.text }}
+                        {% empty %}
+                        <p>There are no replies yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <p>
+                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                    Reply
+                </button>
+            </p>
+            <div class="collapse" id="collapseReply">
+                <div class="card card-body">
+                    <form action="." method="post">
+                        {{ comment_form.as_p }}
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                        <input class="btn btn-primary" type="submit" value="Reply">
+                    </form>
+                </div>
+            </div>
             <hr>
         </div>
     {% empty %}
