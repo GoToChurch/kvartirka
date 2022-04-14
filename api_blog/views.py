@@ -1,8 +1,8 @@
 from rest_framework.response import Response
-from rest_framework import viewsets, permissions, pagination, generics
-from .models import *
-from .serializers import BlogSerializer, PostSerializer, UserSerializer, \
-    SubscribeSerializer, SeenPostSerializer, CommentSerializer
+from rest_framework import generics, permissions, pagination, viewsets
+from .models import Blog, Comment, Post, SeenPosts, Subscribe
+from .serializers import BlogSerializer, CommentSerializer, PostSerializer,\
+    SeenPostSerializer, SubscribeSerializer, UserSerializer
 
 
 class PageNumberSetPagination(pagination.PageNumberPagination):
@@ -18,6 +18,24 @@ class BlogsView(viewsets.ModelViewSet):
     pagination_class = PageNumberSetPagination
 
 
+class CommentView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        post_slug = self.kwargs['post_slug'].lower()
+        post = Post.objects.get(url=post_slug)
+        return Comment.objects.filter(post=post)
+
+
+class PostViewSet(viewsets.ModelViewSet):
+    serializer_class = PostSerializer
+    queryset = Post.objects.all()
+    lookup_field = 'url'
+    pagination_class = PageNumberSetPagination
+
+
 class ProfileView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserSerializer
@@ -28,21 +46,14 @@ class ProfileView(generics.GenericAPIView):
                                    context=self.get_serializer_context()).data,
         })
 
-class PostViewSet(viewsets.ModelViewSet):
-    serializer_class = PostSerializer
-    queryset = Post.objects.all()
-    lookup_field = 'url'
-    pagination_class = PageNumberSetPagination
-
-
-class SubscribeView(generics.ListCreateAPIView):
+class ReplyView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Subscribe.objects.all()
-    serializer_class = SubscribeSerializer
 
     def get_queryset(self):
-        username = self.kwargs['username'].lower()
-        return Subscribe.objects.filter(subscriber=username)
+        parent_id = self.kwargs['parent_id'].lower()
+        return Comment.objects.filter(parent_id=parent_id)
 
 
 class SeenPostsView(generics.ListCreateAPIView):
@@ -54,21 +65,12 @@ class SeenPostsView(generics.ListCreateAPIView):
         username = self.kwargs['username'].lower()
         return SeenPosts.objects.filter(user=username)
 
-class CommentView(generics.ListCreateAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+
+class SubscribeView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    queryset = Subscribe.objects.all()
+    serializer_class = SubscribeSerializer
 
     def get_queryset(self):
-        post_slug = self.kwargs['post_slug'].lower()
-        post = Post.objects.get(url=post_slug)
-        return Comment.objects.filter(post=post)
-
-class ReplyView(generics.ListCreateAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        parent_id = self.kwargs['parent_id'].lower()
-        return Comment.objects.filter(parent_id=parent_id)
+        username = self.kwargs['username'].lower()
+        return Subscribe.objects.filter(subscriber=username)

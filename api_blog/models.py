@@ -1,2 +1,1 @@
-from test_blog.models import *
-
+from test_blog.models import Blog, Comment, Post, SeenPosts, Subscribe,  User
