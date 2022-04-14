@@ -63,3 +63,12 @@ class CommentView(generics.ListCreateAPIView):
         post_slug = self.kwargs['post_slug'].lower()
         post = Post.objects.get(url=post_slug)
         return Comment.objects.filter(post=post)
+
+class ReplyView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        parent_id = self.kwargs['parent_id'].lower()
+        return Comment.objects.filter(parent_id=parent_id)

@@ -1,2 +1,4 @@
 django
 django-ckeditor
+ckeditor_uploader
+rest_framework

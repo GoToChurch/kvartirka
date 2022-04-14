@@ -28,7 +28,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'h1', 'title', 'url', 'description', 'content', 'created_at', 'author', 'blog')
+        fields = ('id', 'h1', 'title', 'url', 'description', 'content',
+                  'created_at', 'author', 'blog')
         lookup_field = 'url'
 
 
@@ -59,6 +60,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
     username = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
     post = serializers.SlugRelatedField(slug_field='url', queryset=Post.objects.all())
+
+    def get_replies(self, obj):
+        queryset = Comment.objects.filter(parent_id=obj.id)
+        serializer = CommentSerializer(queryset, many=True)
+        return serializer.data
 
     class Meta:
         model = Comment
