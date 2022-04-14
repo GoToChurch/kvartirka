@@ -1,6 +1,23 @@
 from django.contrib import admin
 from django.core.mail import send_mail
-from .models import Post, Blog, Subscribe, SeenPosts, Comment
+
+from .models import Blog, Comment, Post, SeenPosts, Subscribe
+
+
+class BlogAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'author')
+    list_filter = ['created_at']
+
+    def save_model(self, request, obj, form, change):
+        '''Переопределяется метод сохранения модели'''
+        user = request.user
+        blog = Blog.objects.get(author=user)
+        obj.save()
+        Subscribe.objects.get_or_create(subscriber=user, blog=blog)
+
+
+class CommentInLine(admin.TabularInline):
+        model = Comment
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -19,25 +36,14 @@ class PostAdmin(admin.ModelAdmin):
         obj.save()
         SeenPosts.objects.get_or_create(user=user, post=obj)
 
-class BlogAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at', 'author')
-    list_filter = ['created_at']
-
-    def save_model(self, request, obj, form, change):
-        '''Переопределяется метод сохранения модели'''
-        user = request.user
-        blog = Blog.objects.get(author=user)
-        obj.save()
-        Subscribe.objects.get_or_create(subscriber=user, blog=blog)
-
-class SubscribeAdmin(admin.ModelAdmin):
-    list_display = ('subscriber', 'blog')
 
 class SeenPostsAdmin(admin.ModelAdmin):
     list_display = ('user', 'post')
 
-class CommentInLine(admin.TabularInline):
-    model = Comment
+
+class SubscribeAdmin(admin.ModelAdmin):
+    list_display = ('subscriber', 'blog')
+
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Blog, BlogAdmin)

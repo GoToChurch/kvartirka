@@ -5,8 +5,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 
-from .forms import LogInForm, PostForm, CommentForm
-from .models import Blog, Post, Subscribe, SeenPosts, Comment
+from .forms import CommentForm, LogInForm, PostForm
+from .models import Blog, Comment, Post, SeenPosts, Subscribe
 
 
 class MainView(View):
@@ -15,6 +15,29 @@ class MainView(View):
     def get(self, request, *args, **kwargs):
         return render(
             request, 'test_blog/home.html')
+
+
+class LogInView(View):
+    '''Представление форма входа на сайт'''
+
+    def get(self, request, *args, **kwargs):
+        form = LogInForm()
+        return render(request, 'test_blog/login.html', context={
+            'form': form,
+        })
+
+    def post(self, request, *args, **kwargs):
+        form = LogInForm(request.POST)
+        if form.is_valid():
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return HttpResponseRedirect('/')
+        return render(request, 'test_blog/login.html', context={
+            'form': form,
+        })
 
 
 class BlogsView(View):
@@ -175,26 +198,3 @@ class SeenPostView(View):
         if not post in seen_posts:
             SeenPosts.objects.get_or_create(user=user, post=post)
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-
-class LogInView(View):
-    '''Представление форма входа на сайт'''
-
-    def get(self, request, *args, **kwargs):
-        form = LogInForm()
-        return render(request, 'test_blog/login.html', context={
-            'form': form,
-        })
-
-    def post(self, request, *args, **kwargs):
-        form = LogInForm(request.POST)
-        if form.is_valid():
-            username = request.POST['username']
-            password = request.POST['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return HttpResponseRedirect('/')
-        return render(request, 'test_blog/login.html', context={
-            'form': form,
-        })

@@ -1,8 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.utils import timezone
-from django.urls import reverse
 from ckeditor_uploader.fields import RichTextUploadingField
+from django.contrib.auth.models import User
+from django.db import models
+from django.urls import reverse
+from django.utils import timezone
 
 
 class Blog(models.Model):
@@ -16,6 +16,7 @@ class Blog(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class Post(models.Model):
     '''Модель поста в блоге'''
@@ -38,31 +39,6 @@ class Post(models.Model):
         return reverse('blog')
 
 
-class Subscribe(models.Model):
-    '''Модель для подписок пользователей на блоги. Не очень удачно сделана, но
-    работает'''
-
-    subscriber = models.ForeignKey(User, related_name='subscriber', null=True, blank=True,
-                               on_delete=models.CASCADE)
-    blog = models.ForeignKey(Blog, related_name='subscribed_blog', null=True, blank=True,
-                             on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Пользователь {self.subscriber} подписан на блог {self.blog}"
-
-
-class SeenPosts(models.Model):
-    '''Модель для отметки просмотра поста пользователем. Не очень удачно
-    сделана, но работает'''
-
-    user = models.ForeignKey(User, related_name='user', null=True, blank=True,
-                               on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, related_name='post', null=True, blank=True,
-                             on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Пользователь {self.user} просмотрел пост {self.post}"
-
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     username = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_name')
@@ -75,3 +51,29 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class SeenPosts(models.Model):
+    '''Модель для отметки просмотра поста пользователем. Не очень удачно
+    сделана, но работает'''
+
+    user = models.ForeignKey(User, related_name='user', null=True, blank=True,
+                               on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name='post', null=True, blank=True,
+                             on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Пользователь {self.user} просмотрел пост {self.post}'
+
+
+class Subscribe(models.Model):
+    '''Модель для подписок пользователей на блоги. Не очень удачно сделана, но
+    работает'''
+
+    subscriber = models.ForeignKey(User, related_name='subscriber', null=True, blank=True,
+                               on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, related_name='subscribed_blog', null=True, blank=True,
+                             on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Пользователь {self.subscriber} подписан на блог {self.blog}'

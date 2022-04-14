@@ -1,5 +1,20 @@
 from django import forms
-from.models import Post, Comment
+
+from.models import Comment, Post
+
+
+class CommentForm(forms.ModelForm):
+
+    class Meta:
+        model = Comment
+        fields = ('text',)
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5
+            }),
+        }
+
 
 class LogInForm(forms.Form):
     '''Форма входа в систему'''
@@ -39,16 +54,4 @@ class PostForm(forms.ModelForm):
                                               'resize: vertical;'}),
             'content': forms.Textarea(attrs={'style':
                                                      'resize: vertical;'})
-        }
-
-class CommentForm(forms.ModelForm):
-
-    class Meta:
-        model = Comment
-        fields = ('text',)
-        widgets = {
-            'text': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 5
-            }),
         }
