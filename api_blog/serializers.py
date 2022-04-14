@@ -8,7 +8,13 @@ class BlogSerializer(serializers.ModelSerializer):
                                           queryset=User.objects.all())
     class Meta:
         model = Blog
-        fields = ('title', 'url', 'description', 'created_at', 'author')
+        fields = (
+            'title',
+            'url',
+            'description',
+            'created_at',
+            'author'
+        )
         lookup_field = 'url'
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -22,7 +28,14 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'post', 'username', 'text', 'created_date', 'parent')
+        fields = (
+            'id',
+            'post',
+            'username',
+            'text',
+            'created_date',
+            'parent'
+        )
         lookup_field = 'id'
         extra_kwargs = {
             'url': {'lookup_field': 'id'}
@@ -42,8 +55,17 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'h1', 'title', 'url', 'description', 'content',
-                  'created_at', 'author', 'blog')
+        fields = (
+            'id',
+            'h1',
+            'title',
+            'url',
+            'description',
+            'content',
+            'created_at',
+            'author',
+            'blog'
+        )
         lookup_field = 'url'
 
 class SeenPostSerializer(serializers.ModelSerializer):

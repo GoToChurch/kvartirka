@@ -41,7 +41,13 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ('h1', 'title', 'url', 'description', 'content')
+        fields = (
+            'h1',
+            'title',
+            'url',
+            'description',
+            'content'
+        )
         labels = {
             'h1': 'H1',
             'title': 'Title',

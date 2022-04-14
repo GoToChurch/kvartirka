@@ -70,9 +70,9 @@ class Subscribe(models.Model):
     '''Модель для подписок пользователей на блоги. Не очень удачно сделана, но
     работает'''
 
-    subscriber = models.ForeignKey(User, related_name='subscriber', null=True, blank=True,
-                               on_delete=models.CASCADE)
-    blog = models.ForeignKey(Blog, related_name='subscribed_blog', null=True, blank=True,
+    subscriber = models.ForeignKey(User, related_name='subscriber', null=True,
+                                   on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, related_name='subscribed_blog', null=True,
                              on_delete=models.CASCADE)
 
     def __str__(self):
