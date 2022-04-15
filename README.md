@@ -1,23 +1,24 @@
 =====
-Test Blog
+REST API для системы комментариев блога 
 =====
+
+Не реализована упаковка в докер, т.к не знаком с этой технологией
 
 Запуск
 -----------
 
-1. Добавить "test_blog" и "api_blog" в список INSTALLED_APPS, который находиться в settings.py в директории проекта:
+1. Склонировать репозиторий на локальную машину.
+    git clone https://github.com/GoToChurch/kvartirka.git
 
-    INSTALLED_APPS = [
-        ...
-        'test_blog',
-        'api_blog',
-    ]
+2. Перейти в папку с проектом
 
-2. Добавить test_blog и api_blog URLconf в urls.py в директории проекта:
+    cd kvartirka
 
-    path('test_blog/', include('test_blog.urls')),
-    path('api_blog/', include('api_blog.urls')),
+3. Выполнить команду `python manage.py runserver` и перейти по адресу http://127.0.0.1:8000/
 
-3. Выполнить команду ``python manage.py migrate`` в терминале, чтобы создать модели test_blog.
+Логин для авторизации: admin
+Пароль для авторизации: Adminadmin8899
 
-4. Выполнить команду ``python manage.py runserver`` и перейти по адресу visit http://127.0.0.1:8000/, чтобы начать взаимодействие с блогами
+Api протестирован в Postman. Все функции, указанные в требованиях работают.
+
+Извините за то, что сделано много того, чего не требовалось.
