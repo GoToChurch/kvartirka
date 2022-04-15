@@ -8,11 +8,11 @@ REST API для системы комментариев блога
 -----------
 
 1. Склонировать репозиторий на локальную машину.
-    git clone https://github.com/GoToChurch/kvartirka.git
+    `git clone https://github.com/GoToChurch/kvartirka.git`
 
 2. Перейти в папку с проектом
 
-    cd kvartirka
+    `cd kvartirka`
 
 3. Выполнить команду `python manage.py runserver` и перейти по адресу http://127.0.0.1:8000/
 
